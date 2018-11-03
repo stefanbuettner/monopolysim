@@ -165,8 +165,8 @@ def init_community_cards():
 if __name__  == "__main__":
 
     parser = ArgumentParser(description="Simulates the player movement of the board game monopoly and shows the approximated propability density of the player's position.")
-    parser.add_argument("-n", "--games", dest="num_games", default=1000)
-    parser.add_argument("-k", "--moves", dest="num_moves", default=300)
+    parser.add_argument("-n", "--games", dest="num_games", default=1000, type=int)
+    parser.add_argument("-k", "--moves", dest="num_moves", default=300, type=int)
     args = parser.parse_args()
 
     num_games = args.num_games

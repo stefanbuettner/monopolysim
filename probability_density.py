@@ -1,5 +1,6 @@
 import random as rng
 from matplotlib import pyplot as plt
+from matplotlib import colors
 from enum import IntEnum
 from argparse import ArgumentParser
 
@@ -207,6 +208,49 @@ if __name__  == "__main__":
             i += 1
 
     board = [x / i for x in board]
-    print(board)
-    plt.bar(range(num_fields), board)
+
+    color = colors.get_named_colors_mapping()
+    board_colors = [
+        color['springgreen'],
+        color['sienna'],
+        color['gray'],
+        color['sienna'],
+        color['gray'],
+        color['black'],
+        color['skyblue'],
+        color['gray'],
+        color['skyblue'],
+        color['skyblue'],
+        color['springgreen'],
+        color['violet'],
+        color['gray'],
+        color['violet'],
+        color['violet'],
+        color['black'],
+        color['orange'],
+        color['gray'],
+        color['orange'],
+        color['orange'],
+        color['springgreen'],
+        color['red'],
+        color['gray'],
+        color['red'],
+        color['red'],
+        color['black'],
+        color['yellow'],
+        color['yellow'],
+        color['gray'],
+        color['yellow'],
+        color['springgreen'],
+        color['green'],
+        color['green'],
+        color['gray'],
+        color['green'],
+        color['black'],
+        color['gray'],
+        color['blue'],
+        color['gray'],
+        color['blue'],
+    ]
+    plt.bar(range(num_fields), board, color=board_colors)
     plt.show()

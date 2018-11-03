@@ -115,7 +115,9 @@ class Player:
     
     def move(self):
         steps = self.throw_dice()
+        return self.move_steps(steps)
 
+    def move_steps(self, steps):
         if Field.JAIL == self.pos:
             self.tries_for_doubles += 1
             if self.tries_for_doubles < 3 and self.num_doubles <= 0:
@@ -124,15 +126,12 @@ class Player:
             if self.num_doubles >= 3:
                 self.go_to_jail()
 
-        self.move_steps(steps)
+        self.pos = (self.pos + steps) % self.num_fields
 
         if Field.GO_TO_JAIL == self.pos:
             self.go_to_jail()
         
         return self.pos
-
-    def move_steps(self, steps):
-        self.pos = (self.pos + steps) % self.num_fields
 
 
 def init_chance_cards():

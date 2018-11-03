@@ -138,16 +138,6 @@ def init_chance_cards():
     # print("Initializing chance cards")
     chance_cards = [
         GoToJailCard(),
-        ToFieldCard(Field.START)
-    ]
-    chance_cards = chance_cards + [NoopCard()] * (16 - len(chance_cards))
-    rng.shuffle(chance_cards)
-    return chance_cards
-
-def init_community_cards():
-    # print("Initializing community cards")
-    community_cards = [
-        GoToJailCard(),
         ToNextStationCard(),
         ToNextStationCard(),
         ToNextSupplierCard(),
@@ -157,6 +147,16 @@ def init_community_cards():
         ToFieldCard(Field.NEW_YORK_AVENUE),
         ToFieldCard(Field.BOARDWALK),
         MoveBackwardCard(3),
+    ]
+    chance_cards = chance_cards + [NoopCard()] * (16 - len(chance_cards))
+    rng.shuffle(chance_cards)
+    return chance_cards
+
+def init_community_cards():
+    # print("Initializing community cards")
+    community_cards = [
+        GoToJailCard(),
+        ToFieldCard(Field.START)
     ]
     community_cards = community_cards + [NoopCard()] * (16 - len(community_cards))
     rng.shuffle(community_cards)

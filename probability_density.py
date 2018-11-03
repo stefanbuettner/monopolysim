@@ -1,6 +1,7 @@
 import random as rng
 from matplotlib import pyplot as plt
 from enum import IntEnum
+from argparse import ArgumentParser
 
 class Field(IntEnum):
     START = 0
@@ -164,8 +165,15 @@ def init_community_cards():
 
 if __name__  == "__main__":
 
-    num_games = 1000
-    num_moves = 300
+    parser = ArgumentParser(description="Simulates the player movement of the board game monopoly and shows the approximated propability density of the player's position.")
+    parser.add_argument("-n", "--games", dest="num_games", default=1000)
+    parser.add_argument("-k", "--moves", dest="num_moves", default=300)
+    args = parser.parse_args()
+
+    num_games = args.num_games
+    num_moves = args.num_moves
+
+    print("Simulating %d games with %d moves each." % (num_games, num_moves))
     
     num_fields = 40
     board = [0 for x in range(num_fields)]

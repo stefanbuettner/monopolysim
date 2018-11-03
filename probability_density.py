@@ -12,6 +12,15 @@ class Field(IntEnum):
     COMMUNITY_1 = 7
     COMMUNITY_2 = 22
     COMMUNITY_3 = 36
+    STATION_1 = 5
+    STATION_2 = 15
+    STATION_3 = 25
+    STATION_4 = 35
+    NEW_YORK_AVENUE = 19
+    PACIFIC_AVENUE = 11
+    ELECTRIC_COMPANY = 12
+    WATER_WORKS = 28
+    BOARDWALK = 39
 
 class ActionCard:
     def execute(self, player):
@@ -30,6 +39,54 @@ class GoToJailCard(ActionCard):
     
     def __repr__(self):
         return "GoToJail"
+
+class ToFieldCard(ActionCard):
+    def __init__(self, field):
+        self.field = field
+
+    def execute(self, player):
+        player.pos = self.field
+    
+    def __repr__(self):
+        return "To" + str(self.field)
+
+class ToNextStationCard(ActionCard):
+    def execute(self, player):
+        if player.pos <= Field.STATION_1:
+            player.pos = Field.STATION_1
+        elif player.pos <= Field.STATION_2:
+            player.pos = Field.STATION_2
+        elif player.pos <= Field.STATION_3:
+            player.pos = Field.STATION_3
+        elif player.pos <= Field.STATION_4:
+            player.pos = Field.STATION_4
+        else:
+            player.pos = Field.STATION_1
+    
+    def __repr__(self):
+        return "ToNextStation"
+
+class MoveBackwardCard(ActionCard):
+    def __init__(self, steps):
+        self.steps = steps
+    
+    def execute(self, player):
+        player.move_steps(-self.steps)
+    
+    def __repr__(self):
+        return "Move"+ str(self.steps) + "Backward"
+
+class ToNextSupplierCard(ActionCard):
+    def execute(self, player):
+        if player.pos <= Field.ELECTRIC_COMPANY:
+            player.pos = Field.ELECTRIC_COMPANY
+        elif player.pos <= Field.WATER_WORKS:
+            player.pos = Field.WATER_WORKS
+        else:
+            player.pos = Field.ELECTRIC_COMPANY
+    
+    def __repr__(self):
+        return "ToNextSupplier"
 
 class Player:
 
@@ -56,7 +113,7 @@ class Player:
         self.tries_for_doubles = 0
     
     def move(self):
-        step = self.throw_dice()
+        steps = self.throw_dice()
 
         if Field.JAIL == self.pos:
             self.tries_for_doubles += 1
@@ -66,22 +123,42 @@ class Player:
             if self.num_doubles >= 3:
                 self.go_to_jail()
 
-        self.pos = (self.pos + step) % self.num_fields
+        self.move_steps(steps)
 
         if Field.GO_TO_JAIL == self.pos:
             self.go_to_jail()
         
         return self.pos
 
+    def move_steps(self, steps):
+        self.pos = (self.pos + steps) % self.num_fields
+
+
 def init_chance_cards():
     # print("Initializing chance cards")
-    chance_cards = [NoopCard()] * 16
+    chance_cards = [
+        GoToJailCard(),
+        ToFieldCard(Field.START)
+    ]
+    chance_cards = chance_cards + [NoopCard()] * (16 - len(chance_cards))
     rng.shuffle(chance_cards)
     return chance_cards
 
 def init_community_cards():
     # print("Initializing community cards")
-    community_cards = [NoopCard()] * 16
+    community_cards = [
+        GoToJailCard(),
+        ToNextStationCard(),
+        ToNextStationCard(),
+        ToNextSupplierCard(),
+        ToFieldCard(Field.START),
+        ToFieldCard(Field.STATION_1),
+        ToFieldCard(Field.PACIFIC_AVENUE),
+        ToFieldCard(Field.NEW_YORK_AVENUE),
+        ToFieldCard(Field.BOARDWALK),
+        MoveBackwardCard(3),
+    ]
+    community_cards = community_cards + [NoopCard()] * (16 - len(community_cards))
     rng.shuffle(community_cards)
     return community_cards
 

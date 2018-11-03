@@ -164,7 +164,7 @@ def init_community_cards():
 
 if __name__  == "__main__":
 
-    num_games = 100
+    num_games = 1000
     num_moves = 300
     
     num_fields = 40
@@ -190,7 +190,7 @@ if __name__  == "__main__":
                 if len(chance_cards) <= 0:
                     chance_cards = init_chance_cards()
 
-            if player.pos in community_cards:
+            if player.pos in community_fields:
                 card = community_cards.pop()
                 card.execute(player)
                 if len(community_cards) <= 0:

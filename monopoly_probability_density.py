@@ -254,5 +254,8 @@ if __name__  == "__main__":
         color['gray'],
         color['blue'],
     ]
+    plt.title("Monopoly probability density distribution")
+    plt.ylabel("Probability")
+    plt.xlabel("Field index")
     plt.bar(range(num_fields), board, color=board_colors)
     plt.show()

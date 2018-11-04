@@ -92,11 +92,12 @@ class ToNextSupplierCard(ActionCard):
 
 class Player:
 
-    def __init__(self, num_fields):
+    def __init__(self, num_fields, buy_free=False):
         self.num_fields = num_fields
         self.pos = 0
         self.num_doubles = 0
         self.tries_for_doubles = 0
+        self.buy_free = buy_free
 
     def throw_dice(self):
         d1 = rng.randint(1,6)
@@ -121,7 +122,7 @@ class Player:
     def move_steps(self, steps):
         if Field.JAIL == self.pos:
             self.tries_for_doubles += 1
-            if self.tries_for_doubles < 3 and self.num_doubles <= 0:
+            if not self.buy_free and self.tries_for_doubles < 3 and self.num_doubles <= 0:
                 return self.pos
         else:
             if self.num_doubles >= 3:
@@ -166,8 +167,9 @@ def init_community_cards():
 if __name__  == "__main__":
 
     parser = ArgumentParser(description="Simulates the player movement of the board game monopoly and shows the approximated propability density of the player's position.")
-    parser.add_argument("-n", "--games", dest="num_games", default=1000, type=int)
-    parser.add_argument("-k", "--moves", dest="num_moves", default=300, type=int)
+    parser.add_argument("-n", "--games", dest="num_games", default=1000, type=int, help="Number of games to simulate.")
+    parser.add_argument("-k", "--moves", dest="num_moves", default=300, type=int, help ="Number of moves per game.")
+    parser.add_argument("--buy-free", dest="buy_free", action='store_true', help="The player always buys himself/herself out of jail.")
     args = parser.parse_args()
 
     num_games = args.num_games
@@ -186,7 +188,7 @@ if __name__  == "__main__":
         chance_cards = init_chance_cards()
         community_cards = init_community_cards()
 
-        player = Player(num_fields)
+        player = Player(num_fields, args.buy_free)
 
         for move in range(num_moves):
 

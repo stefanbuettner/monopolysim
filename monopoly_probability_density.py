@@ -183,7 +183,7 @@ class Field:
     
     def get_rent_0(self, dice):
         return self.rent_0
-
+    
     def get_rent_all(self, dice):
         return self.rent_all
     
@@ -242,7 +242,7 @@ class Station(Field):
     
     def get_rent_3(self, dice):
         return 200
-    
+
     def get_rent_4(self, dice):
         return self.get_rent_3(dice)
     
@@ -354,15 +354,18 @@ if __name__  == "__main__":
     scale = 5
     plt.xkcd()
     fig, ax = plt.subplots(figsize=(2 * scale, 1 * scale))
+    ax.spines['top'].set_color('none')
+    ax.spines['right'].set_color('none')
 
+    # prop = ax.bar(x, board, color=board_colors)
     # ax.set_title("Monopoly probability density distribution")
     # ax.set_ylabel("Probability")
     # ax.set_xlabel("FieldPos index")
-    # prop = ax.bar(x, board, color=board_colors)
 
-    ax.set_title("Monopoly expected return")
+    profit = ax.bar(x, profit_0, color=board_colors)
+    ax.set_title("Monopoly's expected return per throw")
     ax.set_ylabel("Expected return")
     ax.set_xlabel("FieldPos index")
-    profit = ax.bar(x, profit_0, color=board_colors)
 
+    plt.tight_layout()
     plt.show()

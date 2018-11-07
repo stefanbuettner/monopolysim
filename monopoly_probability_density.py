@@ -99,6 +99,7 @@ class Player:
         self.num_doubles = 0
         self.tries_for_doubles = 0
         self.buy_free = buy_free
+        self.threw = 0
 
     def throw_dice(self):
         d1 = rng.randint(1,6)
@@ -109,7 +110,8 @@ class Player:
         else:
             self.num_doubles = 0
 
-        return d1 + d2
+        self.threw = d1 + d2
+        return self.threw
 
     def go_to_jail(self):
         self.pos = FieldPos.JAIL
@@ -168,10 +170,39 @@ def init_community_cards():
     return community_cards
 
 class Field:
-    def __init__(self, name, color, rent_0 = 1):
+    def __init__(self, name, color, rent_0 = 0):
         self.name = name
         self.color = color
         self.rent_0 = rent_0
+    
+    def get_rent_0(self, dice):
+        return self.rent_0
+
+class SupplierField(Field):
+    def __init__(self, name, color):
+        super(SupplierField, self).__init__(name, color, 0)
+    
+    def get_rent_0(self, dice):
+        return 4 * dice
+    
+    def get_rent_1(self, dice):
+        return 10 * dice
+
+class Station(Field):
+    def __init__(self, name, color):
+        super(Station, self).__init__(name, color)
+    
+    def get_rent_0(self, dice):
+        return 25
+    
+    def get_rent_1(self, dice):
+        return 50
+    
+    def get_rent_3(self, dice):
+        return 100
+    
+    def get_rent_4(self, dice):
+        return 200
 
 if __name__  == "__main__":
 
@@ -188,8 +219,55 @@ if __name__  == "__main__":
     
     num_fields = 40
     board = np.zeros(num_fields)
+    profit_0 = np.zeros(num_fields)
     chance_fields = [FieldPos.CHANCE_1, FieldPos.CHANCE_2, FieldPos.CHANCE_3]
     community_fields = [FieldPos.COMMUNITY_1, FieldPos.COMMUNITY_2, FieldPos.COMMUNITY_3]
+
+    color = colors.get_named_colors_mapping()
+    # Rents from 
+    # http://www.math.yorku.ca/~zabrocki/math2042/Monopoly/prices.html
+    board_fields = [
+        Field("Start", color['springgreen']),
+        Field("Mediterranean Avenue", color['sienna'], 2),
+        Field("Community Chest", color['gray']),
+        Field("Baltic Avenue", color['sienna'], 4),
+        Field("Income Tax", color['gray']),
+        Station("Reading Railroad", color['black']),
+        Field("Oriental Avenue", color['skyblue'], 6),
+        Field("Chance", color['gray']),
+        Field("Vermont Avenue", color['skyblue'], 6),
+        Field("Conneticut Avenue", color['skyblue'], 8),
+        Field("Jail", color['springgreen']),
+        Field("St. Charles Place", color['violet'], 10),
+        SupplierField("Electric Company", color['gray']),
+        Field("States Avenue", color['violet'], 10),
+        Field("Virginia Avenue", color['violet'], 12),
+        Station("Pennsylvania Railroad", color['black']),
+        Field("St. James Place", color['darkorange'], 14),
+        Field("Community Chest", color['gray']),
+        Field("Tennessee Avenue", color['darkorange'], 14),
+        Field("New York Avenue", color['darkorange'], 16),
+        Field("Free Parking", color['springgreen']),
+        Field("Kentucky Avenue", color['red'], 18),
+        Field("Chance", color['gray']),
+        Field("Indiana Avenue", color['red'], 18),
+        Field("Illinois Avenue", color['red'], 20),
+        Station("B. & O. Railroad", color['black']),
+        Field("Atlantic Avenue", color['gold'], 22),
+        Field("Ventnor Avenue", color['gold'], 22),
+        SupplierField("Water Works", color['gray']),
+        Field("Marvin Gardens", color['gold'], 24),
+        Field("Go to Jail", color['springgreen']),
+        Field("Pacific Avenue", color['green'], 26),
+        Field("North Carolina Avenue", color['green'], 26),
+        Field("Community Chest", color['gray']),
+        Field("Pennsylvania Avenue", color['green'], 28),
+        Station("Short Line", color['black']),
+        Field("Chance", color['gray']),
+        Field("Park Place", color['mediumblue'], 35),
+        Field("Luxury Tax", color['gray']),
+        Field("Broadwalk", color['mediumblue'], 50),
+    ]
 
     i = 0
     for game in range(num_games):
@@ -216,61 +294,15 @@ if __name__  == "__main__":
                     community_cards = init_community_cards()
 
             board[player.pos] += 1
+            profit_0[player.pos] += board_fields[player.pos].get_rent_0(player.threw)
             i += 1
 
     board = board / i
-
-    color = colors.get_named_colors_mapping()
-    # Rents from 
-    # http://www.math.yorku.ca/~zabrocki/math2042/Monopoly/prices.html
-    board_fields = [
-        Field("Start", color['springgreen']),
-        Field("Mediterranean Avenue", color['sienna'], 2),
-        Field("Community Chest", color['gray']),
-        Field("Baltic Avenue", color['sienna'], 4),
-        Field("Income Tax", color['gray']),
-        Field("Reading Railroad", color['black']),
-        Field("Oriental Avenue", color['skyblue'], 6),
-        Field("Chance", color['gray']),
-        Field("Vermont Avenue", color['skyblue'], 6),
-        Field("Conneticut Avenue", color['skyblue'], 8),
-        Field("Jail", color['springgreen']),
-        Field("St. Charles Place", color['violet'], 10),
-        Field("Electric Company", color['gray']),
-        Field("States Avenue", color['violet'], 10),
-        Field("Virginia Avenue", color['violet'], 12),
-        Field("Pennsylvania Railroad", color['black'], 0),
-        Field("St. James Place", color['darkorange'], 14),
-        Field("Community Chest", color['gray']),
-        Field("Tennessee Avenue", color['darkorange'], 14),
-        Field("New York Avenue", color['darkorange'], 16),
-        Field("Free Parking", color['springgreen']),
-        Field("Kentucky Avenue", color['red'], 18),
-        Field("Chance", color['gray']),
-        Field("Indiana Avenue", color['red'], 18),
-        Field("Illinois Avenue", color['red'], 20),
-        Field("B. & O. Railroad", color['black']),
-        Field("Atlantic Avenue", color['gold'], 22),
-        Field("Ventnor Avenue", color['gold'], 22),
-        Field("Water Works", color['gray']),
-        Field("Marvin Gardens", color['gold'], 24),
-        Field("Go to Jail", color['springgreen']),
-        Field("Pacific Avenue", color['green'], 26),
-        Field("North Carolina Avenue", color['green'], 26),
-        Field("Community Chest", color['gray']),
-        Field("Pennsylvania Avenue", color['green'], 28),
-        Field("Short Line", color['black']),
-        Field("Chance", color['gray']),
-        Field("Park Place", color['mediumblue'], 35),
-        Field("Luxury Tax", color['gray']),
-        Field("Broadwalk", color['mediumblue'], 50),
-    ]
+    profit_0 = profit_0 / i
 
     board_colors = [f.color for f in board_fields]
     field_names = [f.name for f in board_fields]
-    rents_0 = np.array([f.rent_0 for f in board_fields])
-
-    rents_0 = rents_0 * board
+    rents_0 = np.array([f.rent_0 for f in board_fields]) * board
 
     x = np.arange(num_fields)
 
@@ -286,6 +318,6 @@ if __name__  == "__main__":
     ax.set_title("Monopoly expected return")
     ax.set_ylabel("Expected return")
     ax.set_xlabel("FieldPos index")
-    profit = ax.bar(x, rents_0, color=board_colors)
+    profit = ax.bar(x, profit_0, color=board_colors)
 
     plt.show()

@@ -3,8 +3,9 @@ from matplotlib import pyplot as plt
 from matplotlib import colors
 from enum import IntEnum
 from argparse import ArgumentParser
+import numpy as np
 
-class Field(IntEnum):
+class FieldPos(IntEnum):
     START = 0
     JAIL = 10
     GO_TO_JAIL = 30
@@ -54,16 +55,16 @@ class ToFieldCard(ActionCard):
 
 class ToNextStationCard(ActionCard):
     def execute(self, player):
-        if player.pos <= Field.STATION_1:
-            player.pos = Field.STATION_1
-        elif player.pos <= Field.STATION_2:
-            player.pos = Field.STATION_2
-        elif player.pos <= Field.STATION_3:
-            player.pos = Field.STATION_3
-        elif player.pos <= Field.STATION_4:
-            player.pos = Field.STATION_4
+        if player.pos <= FieldPos.STATION_1:
+            player.pos = FieldPos.STATION_1
+        elif player.pos <= FieldPos.STATION_2:
+            player.pos = FieldPos.STATION_2
+        elif player.pos <= FieldPos.STATION_3:
+            player.pos = FieldPos.STATION_3
+        elif player.pos <= FieldPos.STATION_4:
+            player.pos = FieldPos.STATION_4
         else:
-            player.pos = Field.STATION_1
+            player.pos = FieldPos.STATION_1
     
     def __repr__(self):
         return "ToNextStation"
@@ -80,12 +81,12 @@ class MoveBackwardCard(ActionCard):
 
 class ToNextSupplierCard(ActionCard):
     def execute(self, player):
-        if player.pos <= Field.ELECTRIC_COMPANY:
-            player.pos = Field.ELECTRIC_COMPANY
-        elif player.pos <= Field.WATER_WORKS:
-            player.pos = Field.WATER_WORKS
+        if player.pos <= FieldPos.ELECTRIC_COMPANY:
+            player.pos = FieldPos.ELECTRIC_COMPANY
+        elif player.pos <= FieldPos.WATER_WORKS:
+            player.pos = FieldPos.WATER_WORKS
         else:
-            player.pos = Field.ELECTRIC_COMPANY
+            player.pos = FieldPos.ELECTRIC_COMPANY
     
     def __repr__(self):
         return "ToNextSupplier"
@@ -111,14 +112,14 @@ class Player:
         return d1 + d2
 
     def go_to_jail(self):
-        self.pos = Field.JAIL
+        self.pos = FieldPos.JAIL
         self.num_doubles = 0
         self.tries_for_doubles = 0
     
     def move(self):
         steps = self.throw_dice()
 
-        if Field.JAIL == self.pos:
+        if FieldPos.JAIL == self.pos:
             self.tries_for_doubles += 1
             if not self.buy_free and self.tries_for_doubles < 3 and self.num_doubles <= 0:
                 return self.pos
@@ -132,7 +133,7 @@ class Player:
         
         self.pos = (self.pos + steps) % self.num_fields
 
-        if Field.GO_TO_JAIL == self.pos:
+        if FieldPos.GO_TO_JAIL == self.pos:
             self.go_to_jail()
         
         return self.pos
@@ -145,11 +146,11 @@ def init_chance_cards():
         ToNextStationCard(),
         ToNextStationCard(),
         ToNextSupplierCard(),
-        ToFieldCard(Field.START),
-        ToFieldCard(Field.STATION_1),
-        ToFieldCard(Field.PACIFIC_AVENUE),
-        ToFieldCard(Field.NEW_YORK_AVENUE),
-        ToFieldCard(Field.BOARDWALK),
+        ToFieldCard(FieldPos.START),
+        ToFieldCard(FieldPos.STATION_1),
+        ToFieldCard(FieldPos.PACIFIC_AVENUE),
+        ToFieldCard(FieldPos.NEW_YORK_AVENUE),
+        ToFieldCard(FieldPos.BOARDWALK),
         MoveBackwardCard(3),
     ]
     chance_cards = chance_cards + [NoopCard()] * (16 - len(chance_cards))
@@ -160,11 +161,17 @@ def init_community_cards():
     # print("Initializing community cards")
     community_cards = [
         GoToJailCard(),
-        ToFieldCard(Field.START)
+        ToFieldCard(FieldPos.START)
     ]
     community_cards = community_cards + [NoopCard()] * (16 - len(community_cards))
     rng.shuffle(community_cards)
     return community_cards
+
+class Field:
+    def __init__(self, name, color, rent_0 = 1):
+        self.name = name
+        self.color = color
+        self.rent_0 = rent_0
 
 if __name__  == "__main__":
 
@@ -180,9 +187,9 @@ if __name__  == "__main__":
     print("Simulating %d games with %d moves each." % (num_games, num_moves))
     
     num_fields = 40
-    board = [0 for x in range(num_fields)]
-    chance_fields = [Field.CHANCE_1, Field.CHANCE_2, Field.CHANCE_3]
-    community_fields = [Field.COMMUNITY_1, Field.COMMUNITY_2, Field.COMMUNITY_3]
+    board = np.zeros(num_fields)
+    chance_fields = [FieldPos.CHANCE_1, FieldPos.CHANCE_2, FieldPos.CHANCE_3]
+    community_fields = [FieldPos.COMMUNITY_1, FieldPos.COMMUNITY_2, FieldPos.COMMUNITY_3]
 
     i = 0
     for game in range(num_games):
@@ -211,53 +218,74 @@ if __name__  == "__main__":
             board[player.pos] += 1
             i += 1
 
-    board = [x / i for x in board]
+    board = board / i
 
     color = colors.get_named_colors_mapping()
-    board_colors = [
-        color['springgreen'],
-        color['sienna'],
-        color['gray'],
-        color['sienna'],
-        color['gray'],
-        color['black'],
-        color['skyblue'],
-        color['gray'],
-        color['skyblue'],
-        color['skyblue'],
-        color['springgreen'],
-        color['violet'],
-        color['gray'],
-        color['violet'],
-        color['violet'],
-        color['black'],
-        color['orange'],
-        color['gray'],
-        color['orange'],
-        color['orange'],
-        color['springgreen'],
-        color['red'],
-        color['gray'],
-        color['red'],
-        color['red'],
-        color['black'],
-        color['yellow'],
-        color['yellow'],
-        color['gray'],
-        color['yellow'],
-        color['springgreen'],
-        color['green'],
-        color['green'],
-        color['gray'],
-        color['green'],
-        color['black'],
-        color['gray'],
-        color['blue'],
-        color['gray'],
-        color['blue'],
+    # Rents from 
+    # http://www.math.yorku.ca/~zabrocki/math2042/Monopoly/prices.html
+    board_fields = [
+        Field("Start", color['springgreen']),
+        Field("Mediterranean Avenue", color['sienna'], 2),
+        Field("Community Chest", color['gray']),
+        Field("Baltic Avenue", color['sienna'], 4),
+        Field("Income Tax", color['gray']),
+        Field("Reading Railroad", color['black']),
+        Field("Oriental Avenue", color['skyblue'], 6),
+        Field("Chance", color['gray']),
+        Field("Vermont Avenue", color['skyblue'], 6),
+        Field("Conneticut Avenue", color['skyblue'], 8),
+        Field("Jail", color['springgreen']),
+        Field("St. Charles Place", color['violet'], 10),
+        Field("Electric Company", color['gray']),
+        Field("States Avenue", color['violet'], 10),
+        Field("Virginia Avenue", color['violet'], 12),
+        Field("Pennsylvania Railroad", color['black'], 0),
+        Field("St. James Place", color['darkorange'], 14),
+        Field("Community Chest", color['gray']),
+        Field("Tennessee Avenue", color['darkorange'], 14),
+        Field("New York Avenue", color['darkorange'], 16),
+        Field("Free Parking", color['springgreen']),
+        Field("Kentucky Avenue", color['red'], 18),
+        Field("Chance", color['gray']),
+        Field("Indiana Avenue", color['red'], 18),
+        Field("Illinois Avenue", color['red'], 20),
+        Field("B. & O. Railroad", color['black']),
+        Field("Atlantic Avenue", color['gold'], 22),
+        Field("Ventnor Avenue", color['gold'], 22),
+        Field("Water Works", color['gray']),
+        Field("Marvin Gardens", color['gold'], 24),
+        Field("Go to Jail", color['springgreen']),
+        Field("Pacific Avenue", color['green'], 26),
+        Field("North Carolina Avenue", color['green'], 26),
+        Field("Community Chest", color['gray']),
+        Field("Pennsylvania Avenue", color['green'], 28),
+        Field("Short Line", color['black']),
+        Field("Chance", color['gray']),
+        Field("Park Place", color['mediumblue'], 35),
+        Field("Luxury Tax", color['gray']),
+        Field("Broadwalk", color['mediumblue'], 50),
     ]
-    plt.title("Monopoly probability density distribution")
-    plt.ylabel("Probability")
-    plt.xlabel("Field index")
-    plt.bar(range(num_fields), board, color=board_colors)
+
+    board_colors = [f.color for f in board_fields]
+    field_names = [f.name for f in board_fields]
+    rents_0 = np.array([f.rent_0 for f in board_fields])
+
+    rents_0 = rents_0 * board
+
+    x = np.arange(num_fields)
+
+    scale = 5
+    plt.xkcd()
+    fig, ax = plt.subplots(figsize=(2 * scale, 1 * scale))
+
+    # ax.set_title("Monopoly probability density distribution")
+    # ax.set_ylabel("Probability")
+    # ax.set_xlabel("FieldPos index")
+    # prop = ax.bar(x, board, color=board_colors)
+
+    ax.set_title("Monopoly expected return")
+    ax.set_ylabel("Expected return")
+    ax.set_xlabel("FieldPos index")
+    profit = ax.bar(x, rents_0, color=board_colors)
+
     plt.show()

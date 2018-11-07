@@ -170,13 +170,37 @@ def init_community_cards():
     return community_cards
 
 class Field:
-    def __init__(self, name, color, rent_0 = 0):
+    def __init__(self, name, color, rent_0=0, rent_all=0, rent_1=0, rent_2=0, rent_3=0, rent_4=0, rent_hotel=0):
         self.name = name
         self.color = color
         self.rent_0 = rent_0
+        self.rent_all = rent_all
+        self.rent_1 = rent_1
+        self.rent_2 = rent_2
+        self.rent_3 = rent_3
+        self.rent_4 = rent_4
+        self.rent_hotel = rent_hotel
     
     def get_rent_0(self, dice):
         return self.rent_0
+
+    def get_rent_all(self, dice):
+        return self.rent_all
+    
+    def get_rent_1(self, dice):
+        return self.rent_1
+    
+    def get_rent_2(self, dice):
+        return self.rent_2
+    
+    def get_rent_3(self, dice):
+        return self.rent_3
+    
+    def get_rent_4(self, dice):
+        return self.rent_4
+    
+    def get_rent_hotel(self, dice):
+        return self.rent_hotel
 
 class SupplierField(Field):
     def __init__(self, name, color):
@@ -185,8 +209,20 @@ class SupplierField(Field):
     def get_rent_0(self, dice):
         return 4 * dice
     
-    def get_rent_1(self, dice):
+    def get_rent_all(self, dice):
         return 10 * dice
+    
+    def get_rent_1(self, dice):
+        return self.get_rent_all(dice)
+    
+    def get_rent_2(self, dice):
+        return self.get_rent_1(dice)
+    
+    def get_rent_3(self, dice):
+        return self.get_rent_3(dice)
+
+    def get_rent_hotel(self, dice):
+        return self.get_rent_4(dice)
 
 class Station(Field):
     def __init__(self, name, color):
@@ -195,14 +231,23 @@ class Station(Field):
     def get_rent_0(self, dice):
         return 25
     
+    def get_rent_all(self, dice):
+        return self.get_rent_0(dice)
+    
     def get_rent_1(self, dice):
         return 50
     
-    def get_rent_3(self, dice):
+    def get_rent_2(self, dice):
         return 100
     
-    def get_rent_4(self, dice):
+    def get_rent_3(self, dice):
         return 200
+    
+    def get_rent_4(self, dice):
+        return self.get_rent_3(dice)
+    
+    def get_rent_hotel(self, dice):
+        return self.get_rent_4(dice)
 
 if __name__  == "__main__":
 
